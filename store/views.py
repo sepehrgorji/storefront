@@ -7,18 +7,29 @@ from .models import Product
 from .serializers import ProductSerializers
 # Create your views here.
 
-@api_view()
+@api_view(['GET', 'POST'])
 def product_list(request):
-    queryset = Product.objects.all()
-    serializer = ProductSerializers(queryset, many=True, context={'request':request})
-    return Response(serializer.data)
+    if request.method == 'GET':
+        queryset = Product.objects.all()
+        serializer = ProductSerializers(queryset, many=True, context={'request':request})
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = ProductSerializers(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@api_view()
+@api_view(['GET', 'PUT'])
 def product_detail(request, id):
     product = get_object_or_404(Product, pk=id)
-    serailzer = ProductSerializers(product)
-    return Response(serailzer.data)
-
+    if request.method == 'GET':
+        serailzer = ProductSerializers(product)
+        return Response(serailzer.data)
+    elif request.method == 'PUT':
+        serailzer = ProductSerializers(product, data = request.data)
+        serailzer.is_valid(raise_exception=True)
+        serailzer.save()
+        return Response(serailzer.data)
 
 @api_view()
 def collection_detail(request, pk):
